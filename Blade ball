@@ -1,0 +1,165 @@
+-- Zioles Task Hub by Joey | Key System + Glow + Dark Green + 24-Hour Key Save
+local RequiredKey = "1h2hh37dubow82ujeysysu3uhd"
+local LoaderURL = "https://api.luarmor.net/files/v4/loaders/7d547923627ff4097fb605ff69e20df1.lua"
+local DiscordInvite = "https://discord.gg/NNSPa7vZ"
+local SaveFile = "zioles_key.json"
+local ExpirySeconds = 86400 -- 24 hours
+
+-- Function to check if saved key is valid
+local function isKeyValid()
+    if isfile(SaveFile) then
+        local data = game:GetService("HttpService"):JSONDecode(readfile(SaveFile))
+        return data.key == RequiredKey and (tick() - data.timestamp) <= ExpirySeconds
+    end
+    return false
+end
+
+-- Function to save key with timestamp
+local function saveKey()
+    local data = {
+        key = RequiredKey,
+        timestamp = tick()
+    }
+    writefile(SaveFile, game:GetService("HttpService"):JSONEncode(data))
+end
+
+-- GUI
+local gui = Instance.new("ScreenGui", game.CoreGui)
+gui.Name = "ZiolesTaskHub"
+gui.ResetOnSpawn = false
+
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0, 350, 0, 260)
+frame.Position = UDim2.new(0.5, -175, 0.5, -130)
+frame.BackgroundColor3 = Color3.fromRGB(10, 40, 10)
+frame.BorderSizePixel = 0
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
+
+local glow = Instance.new("UIStroke", frame)
+glow.Color = Color3.fromRGB(0, 255, 0)
+glow.Thickness = 2.5
+glow.Transparency = 0.4
+glow.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1, 0, 0.17, 0)
+title.Position = UDim2.new(0, 0, 0, 0)
+title.BackgroundTransparency = 1
+title.Text = "🔐 Zioles Task Hub"
+title.Font = Enum.Font.GothamBold
+title.TextScaled = true
+title.TextColor3 = Color3.fromRGB(0, 255, 0)
+
+local info = Instance.new("TextLabel", frame)
+info.Size = UDim2.new(1, -20, 0.12, 0)
+info.Position = UDim2.new(0, 10, 0.17, 0)
+info.BackgroundTransparency = 1
+info.Text = "Join the Discord for the key:"
+info.Font = Enum.Font.Gotham
+info.TextScaled = true
+info.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+local discord = Instance.new("TextLabel", frame)
+discord.Size = UDim2.new(1, -20, 0.12, 0)
+discord.Position = UDim2.new(0, 10, 0.29, 0)
+discord.BackgroundTransparency = 1
+discord.Text = DiscordInvite
+discord.Font = Enum.Font.GothamBold
+discord.TextScaled = true
+discord.TextColor3 = Color3.fromRGB(0, 255, 127)
+
+local copyButton = Instance.new("TextButton", frame)
+copyButton.Size = UDim2.new(0.5, 0, 0.12, 0)
+copyButton.Position = UDim2.new(0.25, 0, 0.42, 0)
+copyButton.BackgroundColor3 = Color3.fromRGB(20, 70, 20)
+copyButton.Text = "📋 Copy Discord"
+copyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+copyButton.TextScaled = true
+copyButton.Font = Enum.Font.GothamBold
+Instance.new("UICorner", copyButton).CornerRadius = UDim.new(0, 6)
+
+local keyBox = Instance.new("TextBox", frame)
+keyBox.PlaceholderText = "Enter key here..."
+keyBox.Text = ""
+keyBox.Size = UDim2.new(0.85, 0, 0.13, 0)
+keyBox.Position = UDim2.new(0.075, 0, 0.56, 0)
+keyBox.BackgroundColor3 = Color3.fromRGB(30, 90, 30)
+keyBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+keyBox.TextScaled = true
+keyBox.Font = Enum.Font.Gotham
+Instance.new("UICorner", keyBox).CornerRadius = UDim.new(0, 6)
+
+local status = Instance.new("TextLabel", frame)
+status.Size = UDim2.new(1, -20, 0.1, 0)
+status.Position = UDim2.new(0, 10, 0.71, 0)
+status.BackgroundTransparency = 1
+status.Text = ""
+status.Font = Enum.Font.Gotham
+status.TextScaled = true
+status.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+local submit = Instance.new("TextButton", frame)
+submit.Size = UDim2.new(0.6, 0, 0.13, 0)
+submit.Position = UDim2.new(0.2, 0, 0.84, 0)
+submit.BackgroundColor3 = Color3.fromRGB(25, 100, 25)
+submit.Text = "✅ Submit Key"
+submit.TextColor3 = Color3.fromRGB(255, 255, 255)
+submit.TextScaled = true
+submit.Font = Enum.Font.GothamBold
+Instance.new("UICorner", submit).CornerRadius = UDim.new(0, 6)
+
+-- Copy Discord Function
+copyButton.MouseButton1Click:Connect(function()
+	if setclipboard then
+		setclipboard(DiscordInvite)
+		status.Text = "✅ Discord copied!"
+	else
+		status.Text = "❌ Clipboard not supported."
+	end
+end)
+
+-- Loader Execution
+local function loadScript()
+	status.Text = "🔃 Loading remote script..."
+	local success, result = pcall(function()
+		return game:HttpGet(LoaderURL)
+	end)
+
+	if success and type(result) == "string" then
+		local func, err = loadstring(result)
+		if func then
+			local ok, execErr = pcall(func)
+			if ok then
+				status.Text = "✅ Loader executed!"
+				wait(1)
+				gui:Destroy()
+			else
+				status.Text = "❌ Error running script."
+				warn("[Zioles] Execution Error:", execErr)
+			end
+		else
+			status.Text = "❌ Invalid Lua code."
+			warn("[Zioles] Loadstring Error:", err)
+		end
+	else
+		status.Text = "❌ HTTP Error fetching loader."
+		warn("[Zioles] HTTP Get Error:", result)
+	end
+end
+
+-- Submit Key Logic
+submit.MouseButton1Click:Connect(function()
+	if keyBox.Text == RequiredKey then
+		status.Text = "🔓 Key accepted!"
+		saveKey()
+		wait(0.5)
+		loadScript()
+	else
+		status.Text = "❌ Invalid key."
+	end
+end)
+
+-- Auto-load if key is valid and fresh
+if isKeyValid() then
+	loadScript()
+end
