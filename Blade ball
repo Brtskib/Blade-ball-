@@ -1,13 +1,11 @@
--- Zioles Task Hub by Joey | Final Version
--- Dark Green UI + Glow + Key System + 24hr Save + Auto-Hide on Success
-
+-- Zioles Task Hub | Key System + 24hr Save + Dark Green + Glow + Close Button
 local RequiredKey = "1h2hh37dubow82ujeysysu3uhd"
 local LoaderURL = "https://api.luarmor.net/files/v4/loaders/7d547923627ff4097fb605ff69e20df1.lua"
 local DiscordInvite = "https://discord.gg/NNSPa7vZ"
 local SaveFile = "zioles_key.json"
-local ExpirySeconds = 86400 -- 24 hours
+local ExpirySeconds = 86400
 
--- Key Save Logic
+-- Check if key is valid and not expired
 local function isKeyValid()
     if isfile(SaveFile) then
         local data = game:GetService("HttpService"):JSONDecode(readfile(SaveFile))
@@ -16,12 +14,13 @@ local function isKeyValid()
     return false
 end
 
+-- Save key to file
 local function saveKey()
     local data = { key = RequiredKey, timestamp = tick() }
     writefile(SaveFile, game:GetService("HttpService"):JSONEncode(data))
 end
 
--- UI Setup
+-- GUI Setup
 local gui = Instance.new("ScreenGui", game.CoreGui)
 gui.Name = "ZiolesTaskHub"
 gui.ResetOnSpawn = false
@@ -39,6 +38,22 @@ glow.Thickness = 2.5
 glow.Transparency = 0.4
 glow.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
+-- Close Button
+local closeBtn = Instance.new("TextButton", frame)
+closeBtn.Size = UDim2.new(0, 30, 0, 30)
+closeBtn.Position = UDim2.new(1, -35, 0, 5)
+closeBtn.Text = "X"
+closeBtn.Font = Enum.Font.GothamBold
+closeBtn.TextSize = 18
+closeBtn.BackgroundColor3 = Color3.fromRGB(30, 80, 30)
+closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(1, 0)
+
+closeBtn.MouseButton1Click:Connect(function()
+	gui:Destroy()
+end)
+
+-- UI Elements
 local title = Instance.new("TextLabel", frame)
 title.Size = UDim2.new(1, 0, 0.17, 0)
 title.Position = UDim2.new(0, 0, 0, 0)
@@ -116,7 +131,7 @@ copyButton.MouseButton1Click:Connect(function()
 	end
 end)
 
--- Load remote script and destroy GUI
+-- Load Script
 local function loadScript()
 	status.Text = "🔃 Loading..."
 	local success, result = pcall(function()
@@ -128,24 +143,24 @@ local function loadScript()
 		if func then
 			local ok, execErr = pcall(func)
 			if ok then
-				status.Text = "✅ Loaded successfully!"
+				status.Text = "✅ Loaded!"
 				wait(0.5)
-				gui:Destroy() -- DESTROY GUI AFTER EXECUTION
+				gui:Destroy()
 			else
 				status.Text = "❌ Runtime error."
-				warn("[Zioles] Execution error:", execErr)
+				warn("[Zioles] Exec error:", execErr)
 			end
 		else
-			status.Text = "❌ Invalid Lua code."
+			status.Text = "❌ Invalid code."
 			warn("[Zioles] Loadstring error:", err)
 		end
 	else
-		status.Text = "❌ Failed to fetch loader."
-		warn("[Zioles] HTTP Error:", result)
+		status.Text = "❌ HTTP Error."
+		warn("[Zioles] HTTP error:", result)
 	end
 end
 
--- Submit Key
+-- Key Check
 submit.MouseButton1Click:Connect(function()
 	if keyBox.Text == RequiredKey then
 		status.Text = "🔓 Key accepted!"
@@ -157,7 +172,7 @@ submit.MouseButton1Click:Connect(function()
 	end
 end)
 
--- Auto-load if valid key saved
+-- Auto-load if saved key still valid
 if isKeyValid() then
 	loadScript()
 end
